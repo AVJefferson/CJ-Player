@@ -4,6 +4,8 @@
 #include <sys/ioctl.h>
 #include <ncurses.h>
 
+#include "library_structure.h"
+
 // Attempt at Array of Functions
 // typedef int (*IntFunction);
 // IntFunction functions[] =
@@ -25,106 +27,12 @@ WINDOW *TABS[tab_no];
 WINDOW *BODY;
 WINDOW *FOOTER;
 
-// todo NOW PLAYING
-// *************************************************************************************
-// * Playing Now * Queues * Playlists * Genres * Folders * Artists * Albums * Settings * // Highlight Open Tab using Color
-// *************************************************************************************
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                 (LYRIC)                 * // Current LIne in Bold
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                                         *
-// *******************************************                                         *
-// * Title:                                  *                                         * // Marquee
-// * Artists:                                *                                         * // Marquee
-// * Album:                                  *                                         * // Marquee
-// ************************************************************************************* // Color coded to indicate progress
-// * Year[YYYY]            Previous(H) * Play/Pause( ) * Next(L)   [HH:MM:SS/HH:MM:SS] *
-// * Favourite (F) * Help (H) * Info (I) * Artists (A) * Album (Z) * AddToPlaylist (P) * // Highlight Fav if its fav
-// * Toggle Repeat(R)[1] * Toggle Jump Queue(Q)[1] * Volume[09] * Shuffle(S) * Find(S) *
-// *************************************************************************************
-
-// todo Queues
-// *************************************************************************************
-// * Playing Now * Queues * Playlists * Genres * Folders * Artists * Albums * Settings * // Highlight Open Tab using Color
-// *************************************************************************************
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                   ***                   * // Start of List
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0001> <artist> - <title>               *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0002> <artist> - <title>               *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0003> <artist> - <title>               *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0004> <artist> - <title>               *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0005> <artist> - <title>               * // Current Music in Bold
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0006> <artist> - <title>               * // Cursor Music in highlight
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0007> <artist> - <title>               * // Highlighted music data in LHS
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0008> <artist> - <title>               *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0009> <artist> - <title>               *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0010> <artist> - <title>               *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0011> <artist> - <title>               *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0012> <artist> - <title>               *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0013> <artist> - <title>               *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0014> <artist> - <title>               *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0015> <artist> - <title>               *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0016> <artist> - <title>               *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <0017> <artist> - <title>               *
-// ******************************************* <0018> <artist> - <title>               *
-// * Title:                                  * <0019> <artist> - <title>               * // Marquee
-// * Artists:                                * <0020> <artist> - <title>               * // Marquee
-// * Album:                                  *                   ***                   * // Marquee, Reach end of list
-// ************************************************************************************* // Color coded to indicate progress
-// * Year[YYYY]            Previous(H) * Play/Pause( ) * Next(L)   [HH:MM:SS/HH:MM:SS] *
-// * Favourite (F) * Help (H) * Info (I) * Artists (A) * Album (Z) * AddToPlaylist (P) * // Highlight Fav if its fav
-// * Toggle Repeat(R)[1] * Toggle Jump Queue(Q)[1] * Volume[09] * Shuffle(S) * Find(S) * // Q for quiting
-// *************************************************************************************
-
-// todo Playlist
-// *************************************************************************************
-// * Playing Now * Queues * Playlists * Genres * Folders * Artists * Albums * Settings * // Highlight Open Tab using Color
-// *************************************************************************************
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx *                   ***                   * // Start of List
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      * // Current Music in Bold
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      * // Cursor Music in highlight
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      * // Highlighted music data in LHS
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      *
-// * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx * <artist> - <title>                      *
-// ******************************************* <artist> - <title>                      *
-// * Title:                                  * <artist> - <title>                      * // Marquee
-// * Artists:                                * <artist> - <title>                      * // Marquee
-// * Album:                                  *                   ***                   * // Marquee, Reach end of list
-// ************************************************************************************* // Color coded to indicate progress
-// * Year[YYYY]    Fav     Previous(H) * Play/Pause( ) * Next(L)   [HH:MM:SS/HH:MM:SS] *
-// **R[1>]**Q[1>]**Volume[01]**Shuffle********************************Help(H)**Quit(Q)**
-
-void resize()
-{
-  while (o.ws_col == n.ws_col && n.ws_row == o.ws_row)
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &n);
-  ioctl(STDOUT_FILENO, TIOCGWINSZ, &o);
-}
+// void resize()
+// {
+//   while (o.ws_col == n.ws_col && n.ws_row == o.ws_row)
+//     ioctl(STDOUT_FILENO, TIOCGWINSZ, &n);
+//   ioctl(STDOUT_FILENO, TIOCGWINSZ, &o);
+// }
 
 int waitForKeyPress()
 {
@@ -141,7 +49,7 @@ int waitForKeyPress()
   return key;
 }
 
-int title_menus(int tab = 0)
+int tabs(int tab = 0)
 {
   int i, j, press_key;
 
@@ -169,11 +77,12 @@ int main(int argc, char **argv)
   // Get Screen Size
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &o);
 
-  // Memory Allocation for ncurses
+  // ncurses Init Functions
   initscr();
-  noecho();
-  keypad(stdscr, TRUE);
+  noecho();             // Do Not Print Key Presses
+  keypad(stdscr, TRUE); // Allow Arrow Keys
   refresh();
+  curs_set(0); // Remove Blinking Cursor
 
   // VARIABLES USED
   int i, j, c_ret = 0;
@@ -197,36 +106,40 @@ int main(int argc, char **argv)
   }
 
   // Body Window
-  BODY = newwin(o.ws_row - 4, o.ws_col, 2, 0);
+  BODY = newwin(o.ws_row - 5, o.ws_col, 2, 0);
   wborder(BODY, '*', '*', '*', '*', '*', '*', '*', '*');
   wrefresh(BODY);
 
   // Footer Window
-  FOOTER = newwin(3, o.ws_col, o.ws_row - 3, 0);
+  FOOTER = newwin(4, o.ws_col, o.ws_row - 4, 0);
   wborder(FOOTER, '*', '*', '*', '*', '*', '*', '*', '*');
-  mvwprintw(FOOTER, 1, 2, "Y[0000]  Fav  C[NNNN]  <Title> - <artist>"); // Marquee
-  mvwprintw(FOOTER, 1, o.ws_col - 15, "[MM:SS/MM:SS]");
-  mvwprintw(FOOTER, 2, 2, "R[1>]**Q[1>]**Volume[01]**Shuffle");
-  mvwprintw(FOOTER, 2, o.ws_col - 18, "Help(H)**Quit(Q)");
+  mvwprintw(FOOTER, 1, 2, "%s - %s - %s", "Unknown Artists", "Unknown Album", "Unknown Title"); // Marquee Update
+
+  mvwprintw(FOOTER, 2, 2, "Y[%04d]  Fav  C[%04d]", 0, 0);
+  mvwprintw(FOOTER, 2, 30, "No Music in Queue"); // Player Status Update
+  mvwprintw(FOOTER, 2, o.ws_col -21, "[HH:MM:SS/HH:MM:SS]"); // Live Update
+
+  mvwprintw(FOOTER, 3, 2, "R[1>]**Q[1>]**Volume[01]**Shuffle");
+  mvwprintw(FOOTER, 3, o.ws_col - 18, "Help(H)**Quit(Q)");
   wrefresh(FOOTER);
 
   // Loop Tabs
-  c_ret = title_menus(active_tab);
+  c_ret = tabs(active_tab);
   while (c_ret != 'q')
   {
     if (c_ret == KEY_RIGHT)
     {
       if (active_tab != tab_no - 1)
-        c_ret = title_menus(active_tab + 1);
+        c_ret = tabs(active_tab + 1);
       else
-        c_ret = title_menus(0);
+        c_ret = tabs(0);
     }
     else if (c_ret == KEY_LEFT)
     {
       if (active_tab != 0)
-        c_ret = title_menus(active_tab - 1);
+        c_ret = tabs(active_tab - 1);
       else
-        c_ret = title_menus(tab_no - 2);
+        c_ret = tabs(tab_no - 2);
     }
   }
 
@@ -238,3 +151,4 @@ int main(int argc, char **argv)
   endwin();
   return 0;
 }
+
