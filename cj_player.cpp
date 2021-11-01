@@ -4,15 +4,24 @@
 #include <sys/ioctl.h>
 #include <ncurses.h>
 
+// Attempt at Array of Functions
+// typedef int (*IntFunction);
+// IntFunction functions[] =
+//   {
+//     f1,
+//     f2,
+//     f3};
+// };
+
 struct winsize o, n;
 
-const int title_no = 8;
-char titles[][12] = {"Playing Now", "Queues", "Playlists", "Genres", "Folders", "Artists", "Albums", "Settings"};
-int title_len[title_no];
-int title_len_cumm[title_no] = {0};
+const int tab_no = 8;
+char tab_titles[][12] = {"Playing Now", "Queues", "Playlists", "Genres", "Folders", "Artists", "Albums", "Settings"};
+int tab_title_len[tab_no];
+int tab_title_len_cumm[tab_no] = {0};
 int active_tab = 0;
 
-WINDOW *TITLES[title_no];
+WINDOW *TABS[tab_no];
 WINDOW *BODY;
 WINDOW *FOOTER;
 
@@ -117,26 +126,41 @@ void resize()
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &o);
 }
 
-int now()
+int waitForKeyPress()
 {
+  int key;
+  while (key = getch())
+  {
+    if (key == 'q')
+      return key;
+    else if (key == KEY_LEFT)
+      return key;
+    else if (key == KEY_RIGHT)
+      return key;
+  }
+  return key;
+}
 
+int title_menus(int tab = 0)
+{
   int i, j, press_key;
 
-  // Tab Switch
-  mvwprintw(TITLES[active_tab], 1, 1, titles[active_tab]);
-  wrefresh(TITLES[active_tab]);
-  attrset(A_REVERSE);
-  mvwprintw(TITLES[0], 1, 1, titles[0]);
-  attrset(A_NORMAL);
-  wrefresh(TITLES[0]);
-  active_tab = 0;
+  // Remove Highlight from old tab
+  wattroff(TABS[active_tab], A_STANDOUT);
+  mvwprintw(TABS[active_tab], 1, 2, tab_titles[active_tab]);
+  wrefresh(TABS[active_tab]);
 
-  while (press_key = getch())
-  {
-    if (press_key == 'q')
-      break;
-  }
+  // Add Highlight to new tab
+  wattron(TABS[tab], A_STANDOUT);
+  mvwprintw(TABS[tab], 1, 2, tab_titles[tab]);
+  wattroff(TABS[tab], A_STANDOUT);
+  wrefresh(TABS[tab]);
 
+  refresh();
+  active_tab = tab;
+
+  // Loop Waiting for key press
+  press_key = waitForKeyPress();
   return press_key;
 }
 
@@ -149,42 +173,68 @@ int main(int argc, char **argv)
   initscr();
   noecho();
   keypad(stdscr, TRUE);
+  refresh();
 
   // VARIABLES USED
-  char c_ret;
-  int i, j;
+  int i, j, c_ret = 0;
 
   // String Lengths Buffer
-  title_len[0] = strlen(titles[0]);
-  for (i = 1; i < title_no; ++i)
+  tab_title_len[0] = strlen(tab_titles[0]);
+  for (i = 1; i < tab_no; ++i)
   {
-    title_len[i] = strlen(titles[i]);
-    title_len_cumm[i] = title_len_cumm[i - 1] + title_len[i - 1] + 3;
+    tab_title_len[i] = strlen(tab_titles[i]);
+    tab_title_len_cumm[i] = tab_title_len_cumm[i - 1] + tab_title_len[i - 1] + 3;
   }
 
   // WINDOWS USED
   // Titles Windows
-  for (i = 0; i < title_no; ++i)
+  for (i = 0; i < tab_no; ++i)
   {
-    TITLES[i] = newwin(3, title_len[i] + 4, 0, title_len_cumm[i]);
-    box(TITLES[i], 0, 0);
+    TABS[i] = newwin(3, tab_title_len[i] + 4, 0, tab_title_len_cumm[i]);
+    wborder(TABS[i], '*', '*', '*', '*', '*', '*', '*', '*');
+    mvwprintw(TABS[i], 1, 2, tab_titles[i]);
+    wrefresh(TABS[i]);
   }
 
   // Body Window
-  BODY = newwin(o.ws_row - 4, o.ws_col, 3, 0);
-  box(BODY, 0, 0);
+  BODY = newwin(o.ws_row - 4, o.ws_col, 2, 0);
+  wborder(BODY, '*', '*', '*', '*', '*', '*', '*', '*');
+  wrefresh(BODY);
 
   // Footer Window
   FOOTER = newwin(3, o.ws_col, o.ws_row - 3, 0);
-  box(FOOTER, 0, 0);
+  wborder(FOOTER, '*', '*', '*', '*', '*', '*', '*', '*');
+  mvwprintw(FOOTER, 1, 2, "Y[0000]  Fav  C[NNNN]  <Title> - <artist>"); // Marquee
+  mvwprintw(FOOTER, 1, o.ws_col - 15, "[MM:SS/MM:SS]");
+  mvwprintw(FOOTER, 2, 2, "R[1>]**Q[1>]**Volume[01]**Shuffle");
+  mvwprintw(FOOTER, 2, o.ws_col - 18, "Help(H)**Quit(Q)");
+  wrefresh(FOOTER);
 
-  // Default Tab
-  now();
+  // Loop Tabs
+  c_ret = title_menus(active_tab);
+  while (c_ret != 'q')
+  {
+    if (c_ret == KEY_RIGHT)
+    {
+      if (active_tab != tab_no - 1)
+        c_ret = title_menus(active_tab + 1);
+      else
+        c_ret = title_menus(0);
+    }
+    else if (c_ret == KEY_LEFT)
+    {
+      if (active_tab != 0)
+        c_ret = title_menus(active_tab - 1);
+      else
+        c_ret = title_menus(tab_no - 2);
+    }
+  }
 
   // Deallocates memory from ncurses
-  //delete[] TITLES;
-  //delete BODY;
-  //delete FOOTER;
+  for (i = 0; i < tab_no; ++i)
+    delwin(TABS[i]);
+  delwin(BODY);
+  delwin(FOOTER);
   endwin();
   return 0;
 }
