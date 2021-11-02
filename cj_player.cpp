@@ -78,7 +78,7 @@ void initGlobalScreens()
 // Keyboard Keys Accepted by waitForKeyPress()
 #define KEY_ESC 27
 // To Optimize, sort in order of likeliness to occur
-int allowedKeys[] = {KEY_RIGHT, KEY_LEFT, '\n', KEY_ESC, 'q', -1}; // -1 is end of array
+int allowedKeys[] = {KEY_RIGHT, KEY_LEFT, KEY_DOWN, KEY_UP, '\n', KEY_ESC, 'q', -1}; // -1 is end of array
 
 bool isInAllowedKeys(int key, int *deniedKeys = 0)
 {
@@ -101,13 +101,12 @@ bool isInAllowedKeys(int key, int *deniedKeys = 0)
 //   ioctl(STDOUT_FILENO, TIOCGWINSZ, &o);
 // }
 
-int waitForKeyPress()
+int waitForKeyPress(int *deniedKeys = 0)
 {
   int key;
-
   while (key = getch())
   {
-    if (isInAllowedKeys(key))
+    if (isInAllowedKeys(key, deniedKeys))
       return key;
   }
 }
@@ -126,6 +125,9 @@ void wprintwattr(WINDOW *w, int y, int x, int attr, const char *t, ...)
 class body
 {
 public:
+  static int initOnce;
+  static void init(int tab);
+
   static void now(int tag);
   static void queue(int tag);
   static void playlist(int tag);
@@ -136,59 +138,73 @@ public:
   static void setting(int tag);
 };
 
+int body::initOnce = 0;
+
+void body::init(int tab)
+{
+}
+
 void body::now(int tag)
 {
   int id = 0;
-  mvwprintw(BODY[id], 1,2, "NOW");
+  if (!(initOnce & 0b00000001))
+    mvwprintw(BODY[id], 1, 2, "NOW");
   wrefresh(BODY[id]);
 }
 
 void body::queue(int tag)
 {
   int id = 1;
-  mvwprintw(BODY[id], 1,2, "QUEUE");
+  if (!(initOnce & 0b00000010))
+    mvwprintw(BODY[id], 1, 2, "QUEUE");
   wrefresh(BODY[id]);
 }
 
 void body::playlist(int tag)
 {
   int id = 2;
-  mvwprintw(BODY[id], 1,2, "PLAYLIST");
+  if (!(initOnce & 0b00000100))
+    mvwprintw(BODY[id], 1, 2, "PLAYLIST");
   wrefresh(BODY[id]);
 }
 
 void body::genre(int tag)
 {
   int id = 3;
-  mvwprintw(BODY[id], 1,2, "GENRE");
+  if (!(initOnce & 0b00001000))
+    mvwprintw(BODY[id], 1, 2, "GENRE");
   wrefresh(BODY[id]);
 }
 
 void body::folder(int tag)
 {
   int id = 4;
-  mvwprintw(BODY[id], 1,2, "FOLDER");
+  if (!(initOnce & 0b00010000))
+    mvwprintw(BODY[id], 1, 2, "FOLDER");
   wrefresh(BODY[id]);
 }
 
 void body::artist(int tag)
 {
   int id = 5;
-  mvwprintw(BODY[id], 1,2, "ARTIST");
+  if (!(initOnce & 0b00100000))
+    mvwprintw(BODY[id], 1, 2, "ARTIST");
   wrefresh(BODY[id]);
 }
 
 void body::album(int tag)
 {
   int id = 6;
-  mvwprintw(BODY[id], 1,2, "ALBUM");
+  if (!(initOnce & 0b01000000))
+    mvwprintw(BODY[id], 1, 2, "ALBUM");
   wrefresh(BODY[id]);
 }
 
 void body::setting(int tag)
 {
   int id = 7;
-  mvwprintw(BODY[id], 1,2, "SETTINGS");
+  if (!(initOnce & 0b10000000))
+    mvwprintw(BODY[id], 1, 2, "SETTINGS");
   wrefresh(BODY[id]);
 }
 
@@ -203,7 +219,7 @@ voidFunctionPointers bodyFunctionArray[] =
         body::album,
         body::setting};
 
-void switchToTab(int toTab = tab_default) // Default Tab
+void switchToTab(int toTab = tab_default, int tag = 0) // Default Tab
 {
   // Remove Highlight from old tab
   mvwprintw(TABS[tab_active], 1, 2, tab_titles[tab_active]);
@@ -227,7 +243,7 @@ void switchToTab(int toTab = tab_default) // Default Tab
 void enterIntoTab(int toTab, int tag = 0)
 {
   if (tab_active != toTab)
-    switchToTab(toTab);
+    switchToTab(toTab, tag);
   isInsideTab = true;
 
   // Blink Current Tab
@@ -235,7 +251,10 @@ void enterIntoTab(int toTab, int tag = 0)
   wnoutrefresh(TABS[tab_active]);
   doupdate();
 
-  // Invoke Body Function
+  // Init Body Of Tabs To the left and right for quick access as async process
+  // Code Here
+
+  // Shift Body tab
   bodyFunctionArray[toTab](tag);
 
   // Normalize Current Tab
@@ -257,8 +276,9 @@ void switchToBody(int toTab, int tag = 0)
 
 void selectTabs()
 {
+  int deniedKeys[] = {KEY_UP, -1};
   switchToTab();
-  int c_ret = waitForKeyPress();
+  int c_ret = waitForKeyPress(deniedKeys);
 
   // Loop Tab Switching
   while (c_ret != 'q')
@@ -282,7 +302,7 @@ void selectTabs()
     else if (c_ret == KEY_ESC && tab_active != tab_default)
       switchToTab(tab_default);
 
-    else if (c_ret == '\n')
+    else if (c_ret == '\n' || c_ret == KEY_DOWN)
       enterIntoTab(tab_active);
 
     // Loop Waiting for key press
