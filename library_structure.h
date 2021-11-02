@@ -31,14 +31,39 @@ struct song : node
   album *albums;
   genre *genres;
 };
+
+struct queue
+{
+  int tag;
+  song *q;
+};
+
+struct playlist
+{
+  int tag;
+  song *q;
+};
+
 /*
 
-Multiple Artists and Genre
+UNDIRECTED GRAPH SRTUCTURE
+  All can be stored as multiple sets.
+  mapping is done through arrays of ids
 
-song mapped to multiple artists, genre, 
-song linked to single album
+queue is a queue of songs selected
+playlist is a queue of pre-selectable songs
 
-album linked to multiple artists
-album linked to multiple songs
-album linked to multiple genre
+song mapped to multiple artists
+song mapped to multiple genres
+song mapped to single album
+
+genre is mapped to multiple songs
+genre is mapped to multiple albums
+genre is mapped to multiple artists
+
+artist is mapped to multiple songs
+artist is mapped to multiple albums
+
+album mapped to multiple artists
+album mapped to multiple songs
 */
