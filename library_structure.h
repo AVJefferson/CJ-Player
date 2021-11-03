@@ -1,44 +1,83 @@
-struct node
+class node
 {
-  int id;
+  unsigned int id;
+  node *edge;
+
+public:
+  node(int i)
+  {
+    id = i;
+  }
 };
 
-struct artist : node
+class song : node
 {
-  int tag;
-};
-
-struct album : node
-{
-  int tag;
-};
-
-struct genre : node
-{
-  int tag;
-};
-
-struct song : node
-{
-  int tag;
   char *title;
   char *lyrics;
   char *loc;
+  char *artist;
   int year;
   int count;
+  node *album;
 
-  artist *artists;
-  album *albums;
-  genre *genres;
+  node *artists;
+  node *genres;
+
+public:
+  song(int i) : node(i)
+  {
+  }
 };
 
-struct queue
+class artist : node
+{
+  char *name;
+
+  node *songs;
+  node *albums;
+  node *genres;
+
+public:
+  artist(int i) : node(i)
+  {
+  }
+};
+
+class album : node
+{
+  int tag;
+
+  node *songs;
+  node *artists;
+  node *genres;
+
+public:
+  album(int i) : node(i)
+  {
+  }
+};
+
+class genre : node
+{
+  int tag;
+
+  node *songs;
+  node *albums;
+  node *artists;
+
+public:
+  genre(int i) : node(i)
+  {
+  }
+};
+
+class queue
 {
   int tag;
   song *q;
 };
 
-struct playlist
+class playlist
 {
   int tag;
   song *q;
@@ -52,18 +91,4 @@ UNDIRECTED GRAPH SRTUCTURE
 
 queue is a queue of songs selected
 playlist is a queue of pre-selectable songs
-
-song mapped to multiple artists
-song mapped to multiple genres
-song mapped to single album
-
-genre is mapped to multiple songs
-genre is mapped to multiple albums
-genre is mapped to multiple artists
-
-artist is mapped to multiple songs
-artist is mapped to multiple albums
-
-album mapped to multiple artists
-album mapped to multiple songs
 */

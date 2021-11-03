@@ -1,3 +1,4 @@
 *.out
 cj_player
 library/
+.test/

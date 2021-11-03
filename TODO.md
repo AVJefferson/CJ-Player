@@ -1,5 +1,8 @@
 # CJ Player Front End
 * Allow Window Resizing
+* Periodically update FOOTER
+* if tabActive = 0
+  * periodically update lyrics if lyrics exist
 
 # CJ Player Window Samples
 
