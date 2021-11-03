@@ -1,60 +1,66 @@
-// Standard Library Header Files
+// Standard Header Files
 #include <string.h>
-
 #include <unistd.h>
 #include <sys/ioctl.h>
 
-// Used Header Files
+// Non-Standard Header Files
 #include <ncurses.h>
 #include "library_structure.h"
 
 // * GLOBAL VARIABLES
 // Titles Tabs Variables
+
+const int tabDefault = 0;
+const int tabNos = 8; // Total Tabs
+const char tabTitles[tabNos][12] = {"Playing Now", "Queues", "Playlists", "Genres", "Folders", "Artists", "Albums", "Settings"};
+int tabTiitleLen[tabNos]; // String Length of all tab titles
+
 int i;
-const int tab_no = 8;         // Total Tabs
-int tab_default = 0;          // Default Tab During Startup
-bool isInsideTab = false;     // If Inside a Tab
-int tab_active = tab_default; // Current Active Tab
-char tab_titles[][12] = {"Playing Now", "Queues", "Playlists", "Genres", "Folders", "Artists", "Albums", "Settings"};
-int tab_title_len[tab_no];            // String Length of all tab titles
-int tab_title_len_cumm[tab_no] = {0}; // Cummulative Distance from LHS to the x coordinate of resp. Windows
+bool isInsideTab = false;
+int titleScreenXPos[tabNos] = {0}; // Cummulative Distance from LHS to the x coordinate of resp. Windows
+int tabActive = tabDefault;        // Current Active Tab
+struct winsize terminal_size;
 
 void initGlobalVariables()
-{
-  // String Lengths Buffer
-  tab_title_len[0] = strlen(tab_titles[0]);
-  for (i = 1; i < tab_no; ++i)
-  {
-    tab_title_len[i] = strlen(tab_titles[i]);
-    tab_title_len_cumm[i] = tab_title_len_cumm[i - 1] + tab_title_len[i - 1] + 3;
-  }
-}
-
-// * WINDOW AND TERMINAL GLOBAL VARIABLES
-struct winsize terminal_size;
-WINDOW *TABS[tab_no];
-WINDOW *BODY[tab_no];
-WINDOW *FOOTER;
-
-// Array of Body Functions
-typedef void (*voidFunctionPointers)(int tag);
-
-void initGlobalScreens()
 {
   // Get Screen Size of Terminal Window
   ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
 
-  // Titles Windows
-  for (i = 0; i < tab_no; ++i)
+  // Calculate string lengths and use it to find x coordinates of TITLE WINDOWS
+  tabTiitleLen[0] = strlen(tabTitles[0]);
+  for (i = 1; i < tabNos; ++i)
   {
-    TABS[i] = newwin(3, tab_title_len[i] + 4, 0, tab_title_len_cumm[i]);
+    tabTiitleLen[i] = strlen(tabTitles[i]);
+    titleScreenXPos[i] = titleScreenXPos[i - 1] + tabTiitleLen[i - 1] + 3;
+  }
+  // Separate last lab to the end
+  titleScreenXPos[i - 1] = terminal_size.ws_col - tabTiitleLen[i - 1] - 4;
+}
+
+// * GLOBAL WINDOW VARIABLES
+WINDOW *TABS[tabNos];
+WINDOW *BODY[tabNos];
+WINDOW *FOOTER;
+
+// Array of Body Functions
+typedef void (*voidFuncPointers)(int tag);
+
+void initGlobalScreens()
+{
+  wborder(stdscr, '*', '*', '*', '*', '*', '*', '*', '*');
+  refresh();
+
+  // Titles Windows
+  for (i = 0; i < tabNos; ++i)
+  {
+    TABS[i] = newwin(3, tabTiitleLen[i] + 4, 0, titleScreenXPos[i]);
     wborder(TABS[i], '*', '*', '*', '*', '*', '*', '*', '*');
-    mvwprintw(TABS[i], 1, 2, tab_titles[i]);
+    mvwprintw(TABS[i], 1, 2, tabTitles[i]);
     wnoutrefresh(TABS[i]);
   }
 
   // Body Window
-  for (i = 0; i < tab_no; ++i)
+  for (i = 0; i < tabNos; ++i)
   {
     BODY[i] = newwin(terminal_size.ws_row - 5, terminal_size.ws_col, 2, 0);
     wborder(BODY[i], '*', '*', '*', '*', '*', '*', '*', '*');
@@ -94,13 +100,7 @@ bool isInAllowedKeys(int key, int *deniedKeys = 0)
   return false;
 }
 
-// void resize()
-// {
-//   while (o.ws_col == n.ws_col && n.ws_row == o.ws_row)
-//     ioctl(STDOUT_FILENO, TIOCGWINSZ, &n);
-//   ioctl(STDOUT_FILENO, TIOCGWINSZ, &o);
-// }
-
+// ! exit() from stdlib.h does not work well with ncurses ... learnt the hard way...
 int waitForKeyPress(int *deniedKeys = 0)
 {
   int key;
@@ -109,24 +109,44 @@ int waitForKeyPress(int *deniedKeys = 0)
     if (isInAllowedKeys(key, deniedKeys))
       return key;
   }
+  return key;
 }
 
-void wprintwattr(WINDOW *w, int y, int x, int attr, const char *t, ...)
+void wprintwattr(WINDOW *w, int y, int x, int attribute, const char *t, ...)
 {
+  // ? Not Sure if this is wa to forward a variable list
   va_list lst;
 
-  wattron(w, attr);
+  wattron(w, attribute);
   mvwprintw(w, y, x, t, lst);
-  wattroff(w, attr);
+  wattroff(w, attribute);
 
   va_end(lst);
 }
 
 class body
 {
+  static __int8_t id_n;
+  static __int8_t id_q;
+  static __int8_t id_p;
+  static __int8_t id_g;
+  static __int8_t id_f;
+  static __int8_t id_ar;
+  static __int8_t id_al;
+  static __int8_t id_s;
+
+  // Each lower order bit is a true/false
+  static int toBeInit;
+
 public:
-  static int initOnce;
-  static void init(int tab);
+  static void init_now(int tag);
+  static void init_queue(int tag);
+  static void init_playlist(int tag);
+  static void init_genre(int tag);
+  static void init_folder(int tag);
+  static void init_artist(int tag);
+  static void init_album(int tag);
+  static void init_setting(int tag);
 
   static void now(int tag);
   static void queue(int tag);
@@ -138,77 +158,106 @@ public:
   static void setting(int tag);
 };
 
-int body::initOnce = 0;
+__int8_t body::id_n = 0;
+__int8_t body::id_q = 1;
+__int8_t body::id_p = 2;
+__int8_t body::id_g = 3;
+__int8_t body::id_f = 4;
+__int8_t body::id_ar = 5;
+__int8_t body::id_al = 6;
+__int8_t body::id_s = 7;
 
-void body::init(int tab)
+int body::toBeInit = 0;
+
+void body::init_now(int tag)
 {
+  if (!((toBeInit >> id_n) & 1))
+    mvwprintw(BODY[id_n], 1, 2, "NOW");
+}
+
+void body::init_queue(int tag)
+{
+  if (!((toBeInit >> id_q) & 1))
+    mvwprintw(BODY[id_q], 1, 2, "QUEUE");
+}
+
+void body::init_playlist(int tag)
+{
+  if (!((toBeInit >> id_p) & 1))
+    mvwprintw(BODY[id_p], 1, 2, "PLAYLIST");
+}
+
+void body::init_genre(int tag)
+{
+  if (!((toBeInit >> id_g) & 1))
+    mvwprintw(BODY[id_g], 1, 2, "GENRE");
+}
+
+void body::init_folder(int tag)
+{
+  if (!((toBeInit >> id_f) & 1))
+    mvwprintw(BODY[id_f], 1, 2, "FOLDER");
+}
+
+void body::init_artist(int tag)
+{
+  if (!((toBeInit >> id_ar) & 1))
+    mvwprintw(BODY[id_ar], 1, 2, "ARTIST");
+}
+
+void body::init_album(int tag)
+{
+  if (!((toBeInit >> id_al) & 1))
+    mvwprintw(BODY[id_al], 1, 2, "ALBUM");
+}
+
+void body::init_setting(int tag)
+{
+  if (!((toBeInit >> id_s) & 1))
+    mvwprintw(BODY[id_s], 1, 2, "SETTINGS");
 }
 
 void body::now(int tag)
 {
-  int id = 0;
-  if (!(initOnce & 0b00000001))
-    mvwprintw(BODY[id], 1, 2, "NOW");
-  wrefresh(BODY[id]);
+  wrefresh(BODY[id_n]);
 }
 
 void body::queue(int tag)
 {
-  int id = 1;
-  if (!(initOnce & 0b00000010))
-    mvwprintw(BODY[id], 1, 2, "QUEUE");
-  wrefresh(BODY[id]);
+  wrefresh(BODY[id_q]);
 }
 
 void body::playlist(int tag)
 {
-  int id = 2;
-  if (!(initOnce & 0b00000100))
-    mvwprintw(BODY[id], 1, 2, "PLAYLIST");
-  wrefresh(BODY[id]);
+  wrefresh(BODY[id_p]);
 }
 
 void body::genre(int tag)
 {
-  int id = 3;
-  if (!(initOnce & 0b00001000))
-    mvwprintw(BODY[id], 1, 2, "GENRE");
-  wrefresh(BODY[id]);
+  wrefresh(BODY[id_g]);
 }
 
 void body::folder(int tag)
 {
-  int id = 4;
-  if (!(initOnce & 0b00010000))
-    mvwprintw(BODY[id], 1, 2, "FOLDER");
-  wrefresh(BODY[id]);
+  wrefresh(BODY[id_f]);
 }
 
 void body::artist(int tag)
 {
-  int id = 5;
-  if (!(initOnce & 0b00100000))
-    mvwprintw(BODY[id], 1, 2, "ARTIST");
-  wrefresh(BODY[id]);
+  wrefresh(BODY[id_ar]);
 }
 
 void body::album(int tag)
 {
-  int id = 6;
-  if (!(initOnce & 0b01000000))
-    mvwprintw(BODY[id], 1, 2, "ALBUM");
-  wrefresh(BODY[id]);
+  wrefresh(BODY[id_al]);
 }
 
 void body::setting(int tag)
 {
-  int id = 7;
-  if (!(initOnce & 0b10000000))
-    mvwprintw(BODY[id], 1, 2, "SETTINGS");
-  wrefresh(BODY[id]);
+  wrefresh(BODY[id_s]);
 }
 
-voidFunctionPointers bodyFunctionArray[] =
+voidFuncPointers bodyFunctionArray[] =
     {
         body::now,
         body::queue,
@@ -219,22 +268,34 @@ voidFunctionPointers bodyFunctionArray[] =
         body::album,
         body::setting};
 
-void switchToTab(int toTab = tab_default, int tag = 0) // Default Tab
+voidFuncPointers bodyInitFunctionArray[] =
+    {
+        body::init_now,
+        body::init_queue,
+        body::init_playlist,
+        body::init_genre,
+        body::init_folder,
+        body::init_artist,
+        body::init_album,
+        body::init_setting};
+
+void switchToTab(int toTab = tabDefault, int tag = 0) // Default Tab
 {
   // Remove Highlight from old tab
-  mvwprintw(TABS[tab_active], 1, 2, tab_titles[tab_active]);
-  wnoutrefresh(TABS[tab_active]);
+  mvwprintw(TABS[tabActive], 1, 2, tabTitles[tabActive]);
+  wnoutrefresh(TABS[tabActive]);
 
   // Add Highlight to new tab
-  wprintwattr(TABS[toTab], 1, 2, A_STANDOUT, tab_titles[toTab]);
+  wprintwattr(TABS[toTab], 1, 2, A_STANDOUT, tabTitles[toTab]);
   wnoutrefresh(TABS[toTab]);
 
   // Shift Body tab
+  bodyInitFunctionArray[toTab](0);
   redrawwin(BODY[toTab]);
   wrefresh(BODY[toTab]);
 
   // Update Global Variable
-  tab_active = toTab;
+  tabActive = toTab;
 
   // Print Changes made to physical screen
   doupdate();
@@ -242,36 +303,31 @@ void switchToTab(int toTab = tab_default, int tag = 0) // Default Tab
 
 void enterIntoTab(int toTab, int tag = 0)
 {
-  if (tab_active != toTab)
-    switchToTab(toTab, tag);
+  if (tabActive != toTab)
+  {
+    // Add light Highlight to old tab
+    wprintwattr(TABS[tabActive], 1, 2, A_BOLD, tabTitles[tabActive]);
+    wnoutrefresh(TABS[tabActive]);
+    tabActive = toTab;
+  }
   isInsideTab = true;
 
   // Blink Current Tab
-  wprintwattr(TABS[tab_active], 1, 2, A_BOLD, tab_titles[tab_active]);
-  wnoutrefresh(TABS[tab_active]);
+  wprintwattr(TABS[tabActive], 1, 2, A_BLINK, tabTitles[tabActive]);
+  wnoutrefresh(TABS[tabActive]);
   doupdate();
 
-  // Init Body Of Tabs To the left and right for quick access as async process
-  // Code Here
+  // Init current BODY WINDOW with needed content
+  bodyInitFunctionArray[toTab](0);
+  // todo Init Right and Left Window (as threads) for 0 lag access;
 
-  // Shift Body tab
+  // Loop Inside Body
   bodyFunctionArray[toTab](tag);
 
-  // Normalize Current Tab
-  mvwprintw(TABS[tab_active], 1, 2, tab_titles[tab_active]);
-  wnoutrefresh(TABS[tab_active]);
+  // Normalize Current Tab on exit
+  mvwprintw(TABS[tabActive], 1, 2, tabTitles[tabActive]);
+  wnoutrefresh(TABS[tabActive]);
   isInsideTab = false;
-}
-
-void switchToBody(int toTab, int tag = 0)
-{
-  // Entering Not Currently Active Tab
-  if (tab_active != toTab)
-  {
-    enterIntoTab(toTab, tag);
-  }
-  else
-    bodyFunctionArray[toTab](tag);
 }
 
 void selectTabs()
@@ -285,25 +341,25 @@ void selectTabs()
   {
     if (c_ret == KEY_RIGHT)
     {
-      if (tab_active != tab_no - 1)
-        switchToTab(tab_active + 1);
+      if (tabActive != tabNos - 1)
+        switchToTab(tabActive + 1);
       else
         switchToTab(0);
     }
 
     else if (c_ret == KEY_LEFT)
     {
-      if (tab_active != 0)
-        switchToTab(tab_active - 1);
+      if (tabActive != 0)
+        switchToTab(tabActive - 1);
       else
-        switchToTab(tab_no - 2);
+        switchToTab(tabNos - 2);
     }
 
-    else if (c_ret == KEY_ESC && tab_active != tab_default)
-      switchToTab(tab_default);
+    else if (c_ret == KEY_ESC && tabActive != tabDefault)
+      switchToTab(tabDefault);
 
     else if (c_ret == '\n' || c_ret == KEY_DOWN)
-      enterIntoTab(tab_active);
+      enterIntoTab(tabActive);
 
     // Loop Waiting for key press
     c_ret = waitForKeyPress();
@@ -323,10 +379,12 @@ int main(int argc, char **argv)
   // Run Once On Startup
   initGlobalVariables();
   initGlobalScreens();
+
+  // Loop accross availabe tabs
   selectTabs();
 
   // Deallocates memory from ncurses and exit program and other processes
-  for (int i = 0; i < tab_no; ++i)
+  for (int i = 0; i < tabNos; ++i)
   {
     delwin(TABS[i]);
     delwin(BODY[i]);
