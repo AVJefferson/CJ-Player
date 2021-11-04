@@ -26,7 +26,7 @@ class Artist(Node):
     def __init__(self, name: str):
         Node.__init__(self)
         global allArtists
-        allArtists[self] = name
+        allArtists[name] = self
         self.name = name
 
 
@@ -39,7 +39,7 @@ class Album(Node):
     def __init__(self, name: str):
         Node.__init__(self)
         global allAlbums
-        allAlbums[self] = name
+        allAlbums[name] = self
         self.name = name
 
 
@@ -52,7 +52,7 @@ class Genre(Node):
     def __init__(self, name: str):
         Node.__init__(self)
         global allGenres
-        allGenres[self] = name
+        allGenres[name] = self
         self.name = name
 
 
@@ -70,7 +70,7 @@ class Song(Node):
     def __init__(self, location, title, lyrics, artist, year, count=0):
         Node.__init__(self)
         global allSongs
-        allSongs[self] = location
+        allSongs[location] = self
         self.loc = location
         self.title = title
         self.lyrics = lyrics
@@ -80,7 +80,9 @@ class Song(Node):
 
 
 def addSongToLibrary(mp3path: str, f):
+    global allAlbums, allArtists, allSongs, allGenres
     mp3file = eyed3.load(mp3path)
+
     try:
         t = str(mp3file.tag.title)
         if t == "None":
@@ -112,21 +114,45 @@ def addSongToLibrary(mp3path: str, f):
         else:
             art = ar.replace(' Ft.', ',').replace(' &', ',').split(', ')
 
-        # No More Errors, All data Availabe for graph creation - song, artists, genres, albums
+        # All data Availabe for graph creation - song, artists, genres, albums
         track = Song(mp3path, t, ly, ar, y)
 
+        # Create and/or add artists, genres and album and link
         for musician in art:
-            if musician not in allArtists.values():
-                Artist(str(musician))
+            if musician not in allArtists.keys():
+                temp = Artist(str(musician))
+                track.artists.append(temp)
+                temp.songs.append(track)
+            else:
+                temp = allArtists[musician]
+                track.artists.append(temp)
+                temp.songs.append(track)
 
         for cat in g:
-            if cat not in allGenres.values():
-                Genre(str(cat))
+            if cat not in allGenres.keys():
+                temp = Genre(str(cat))
+                track.genres.append(temp)
+                temp.songs.append(track)
+            else:
+                temp = allGenres[cat]
+                track.genres.append(temp)
+                temp.songs.append(track)
 
-        if al not in allAlbums.values():
-            Album(str(al))
+        if al not in allAlbums.keys():
+            temp = Album(str(al))
+            track.album = temp
+            temp.songs.append(track)
+            for musician in track.artists:
+                musician.albums.append(temp)
+                temp.artists.append(musician)
+        else:
+            temp = allAlbums[al]
+            track.album = temp
+            temp.songs.append(track)
+            for musician in track.artists:
+                musician.albums.append(temp)
+                temp.artists.append(musician)
 
-            # Link all objects together
     except Exception as inst:
         try:
             f.writelines(str(type(inst)) + " error at " + mp3path[-20:] + "\n")

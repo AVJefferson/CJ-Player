@@ -29,17 +29,17 @@ for musicPaths in sys.argv[1:]:
 file_error.close()
 
 with open("out.songs", "w") as f:
-    for x in MusicLibrary.allSongs:
+    for x in MusicLibrary.allSongs.values():
         f.write(str(x.title) + "\n")
 
 with open("out.artists", "w") as f:
-    for x in MusicLibrary.allArtists:
+    for x in MusicLibrary.allArtists.values():
         f.write(str(x.name) + "\n")
 
 with open("out.albums", "w") as f:
-    for x in MusicLibrary.allAlbums:
+    for x in MusicLibrary.allAlbums.values():
         f.write(str(x.name) + "\n")
 
 with open("out.genres", "w") as f:
-    for x in MusicLibrary.allGenres:
+    for x in MusicLibrary.allGenres.values():
         f.write(str(x.name) + "\n")
