@@ -1,4 +1,6 @@
-*.out
+a.out
 cj_player
 library/
 .test/
+__*__/
+out.*
