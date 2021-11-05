@@ -31,7 +31,35 @@ except Exception as ex:
     file_error.write(str(ex) + " : Unable to Create Lib")
 
 # Save Created Library
+try:
+    l_f = open("library/songs.list", "w")
+    l_p = open("library/playlists/AllSongs.m3u", "w")
+    l_p.write("#EXTM3U\n")
+    for track in MusicLibrary.allSongs:
+        l_f.write(str(track.id) + "\n")
+        l_f.write(str(track.loc) + "\n")
+        l_p.write(str(track.loc) + "\n")
+    l_f.close()
+    l_p.close()
 
+    l_f = open("library/artists.list", "w")
+    for musician in MusicLibrary.allArtists.values():
+        l_f.write(str(musician.id) + "\t" + musician.name + "\n")
+    l_f.close()
+
+    l_f = open("library/albums.list", "w")
+    for alb in MusicLibrary.allAlbums.values():
+        l_f.write(str(alb.id) + "\t" + alb.name + "\n")
+    l_f.close()
+
+    l_f = open("library/genres.list", "w")
+    for category in MusicLibrary.allGenres.values():
+        l_f.write(str(category.id) + "\t" + category.name + "\n")
+    l_f.close()
+except Exception as ex:
+    file_error.write(str(ex) + " : Unable to Write Lib")
 
 
 file_error.close()
+l_f.close()
+l_p.close()
