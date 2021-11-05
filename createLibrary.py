@@ -20,26 +20,18 @@ def getListOfFiles(dirName):
     return allFiles
 
 
-file_error = open("out.error", "w")
+file_error = open("out/error", "w")
 # Create Library from input argumants
-for musicPaths in sys.argv[1:]:
-    for mp3 in getListOfFiles(musicPaths):
-        if mp3.endswith("mp3"):
-            MusicLibrary.addSongToLibrary(mp3, file_error)
+try:
+    for musicPaths in sys.argv[1:]:
+        for mp3 in getListOfFiles(musicPaths):
+            if mp3.endswith("mp3"):
+                MusicLibrary.createGraph(mp3, file_error)
+except Exception as ex:
+    file_error.write(str(ex) + " : Unable to Create Lib")
+
+# Save Created Library
+
+
+
 file_error.close()
-
-with open("out.songs", "w") as f:
-    for x in MusicLibrary.allSongs.values():
-        f.write(str(x.title) + "\n")
-
-with open("out.artists", "w") as f:
-    for x in MusicLibrary.allArtists.values():
-        f.write(str(x.name) + "\n")
-
-with open("out.albums", "w") as f:
-    for x in MusicLibrary.allAlbums.values():
-        f.write(str(x.name) + "\n")
-
-with open("out.genres", "w") as f:
-    for x in MusicLibrary.allGenres.values():
-        f.write(str(x.name) + "\n")

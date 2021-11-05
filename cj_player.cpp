@@ -5,7 +5,7 @@
 
 // Non-Standard Header Files
 #include <ncurses.h>
-#include "library_structure.h"
+#include "MusicLibrary.h"
 
 // * GLOBAL VARIABLES
 // Titles Tabs Variables
