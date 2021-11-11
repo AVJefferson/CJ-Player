@@ -1,7 +1,6 @@
-# create graph
-#   save graph as .dat binary file for c program to read
-# save image as acsii
-#   use a def image for unavailable image
+#save graph as .dat binary file for c program to read
+#save image as acsii
+#use a def image for unavailable image
 import sys
 import os
 

@@ -102,7 +102,7 @@ def createGraph(mp3path: str, f):
         # All data Availabe for graph creation - song, artists, genres, albums
         track = Song(mp3path, t, l, ar, y)
 
-        # Create and/or add artists, genres and album and link
+        # Create and link and/or add artists, genres and album
         for musician in art:
             if musician in allArtists:
                 temp = allArtists[musician]
