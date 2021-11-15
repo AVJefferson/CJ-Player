@@ -3,5 +3,5 @@ sudo aptitude install python3-pip
 
 sudo pip3 install eyeD3
 
-clear && python3 createLibrary.py /SSD/Music_Shared/
+clear && python3 createLibrary.py /SSD/MUSIC/
 clear && g++ cj_player.cpp -lncurses && ./a.out

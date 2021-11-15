@@ -31,8 +31,12 @@ except Exception as ex:
 
 # Save Created Library
 try:
+    os.mkdir("Library")
     l_f = open("library/songs.list", "w")
+
+    os.mkdir("Library/playlists")
     l_p = open("library/playlists/AllSongs.m3u", "w")
+    
     l_p.write("#EXTM3U\n")
     for track in MusicLibrary.allSongs:
         l_f.write(str(track.id) + "\n")
@@ -43,22 +47,35 @@ try:
 
     l_f = open("library/artists.list", "w")
     for musician in MusicLibrary.allArtists.values():
-        l_f.write(str(musician.id) + "\t" + musician.name + "\n")
+        l_f.write(musician.name + "\n")
+        for m in musician.songs:
+            if(m.title == "Unknown"):
+                l_f.write("\t\t" + str(m.loc) + "\n")
+            else:
+                l_f.write("\t\t" + str(m.title) + "\n")
     l_f.close()
 
     l_f = open("library/albums.list", "w")
     for alb in MusicLibrary.allAlbums.values():
-        l_f.write(str(alb.id) + "\t" + alb.name + "\n")
+        l_f.write(alb.name + "\n")
+        for m in alb.songs:
+            if(m.title == "Unknown"):
+                l_f.write("\t\t" + str(m.loc) + "\n")
+            else:
+                l_f.write("\t\t" + str(m.title) + "\n")
     l_f.close()
 
     l_f = open("library/genres.list", "w")
     for category in MusicLibrary.allGenres.values():
-        l_f.write(str(category.id) + "\t" + category.name + "\n")
+        l_f.write(category.name + "\n")
+        for m in category.songs:
+            if(m.title == "Unknown"):
+                l_f.write("\t\t" + str(m.loc) + "\n")
+            else:
+                l_f.write("\t\t" + str(m.title) + "\n")
     l_f.close()
 except Exception as ex:
     file_error.write(str(ex) + " : Unable to Write Lib")
 
 
 file_error.close()
-l_f.close()
-l_p.close()

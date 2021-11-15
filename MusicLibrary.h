@@ -1,7 +1,7 @@
 #include <vector>
 #include <string>
 
-char *DEF_UNKNOWN = "Unknown";
+char *UNKNOWN = "Unknown";
 
 class node
 {
